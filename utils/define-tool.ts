@@ -1,6 +1,6 @@
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
-import type { z } from "zod";
+import type { z } from "zod/v3";
 
 export type ToolAnnotations = {
   readOnlyHint: boolean;
@@ -23,7 +23,6 @@ export type ToolDefinition = {
   ui: string;
   invoking: string;
   invoked: string;
-  componentName: string;
   handler: (input: unknown) => ToolResponse | Promise<ToolResponse>;
 };
 

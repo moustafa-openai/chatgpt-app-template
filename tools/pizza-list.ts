@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { defineTool } from "../utils/define-tool";
 
 const pizzaListInput = z.object({
@@ -15,10 +15,9 @@ export default defineTool({
     destructiveHint: false,
   },
   input: pizzaListInput,
-  ui: "pizza-list",
+  ui: "pizzaz-list",
   invoking: "Hand-tossing a list",
   invoked: "Served a fresh list",
-  componentName: "pizzaz-list",
   async handler(input) {
     return {
       content: [{ type: "text", text: "Rendered a pizza list!" }],

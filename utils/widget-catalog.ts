@@ -46,14 +46,14 @@ export type WidgetCatalog = {
   ) => { tool: ToolDefinition; meta: InvocationMeta } | undefined;
 };
 
-function readWidgetHtml(assetsDir: string, componentName: string): string {
+function readWidgetHtml(assetsDir: string, uiName: string): string {
   if (!fs.existsSync(assetsDir)) {
     throw new Error(
       `Widget assets not found. Expected directory ${assetsDir}. Run "pnpm run build" before starting the server.`,
     );
   }
 
-  const directPath = path.join(assetsDir, `${componentName}.html`);
+  const directPath = path.join(assetsDir, `${uiName}.html`);
   let htmlContents: string | null = null;
 
   if (fs.existsSync(directPath)) {
@@ -63,7 +63,7 @@ function readWidgetHtml(assetsDir: string, componentName: string): string {
       .readdirSync(assetsDir)
       .filter(
         (file) =>
-          file.startsWith(`${componentName}-`) && file.endsWith(".html"),
+          file.startsWith(`${uiName}-`) && file.endsWith(".html"),
       )
       .sort();
     const fallback = candidates[candidates.length - 1];
@@ -74,7 +74,7 @@ function readWidgetHtml(assetsDir: string, componentName: string): string {
 
   if (!htmlContents) {
     throw new Error(
-      `Widget HTML for "${componentName}" not found in ${assetsDir}. Run "pnpm run build" to generate the assets.`,
+      `Widget HTML for "${uiName}" not found in ${assetsDir}. Run "pnpm run build" to generate the assets.`,
     );
   }
 
@@ -104,7 +104,7 @@ function createWidget(definition: ToolDefinition, assetsDir: string): Widget {
     templateUri: `ui://widget/${definition.ui}.html`,
     invoking: definition.invoking,
     invoked: definition.invoked,
-    html: readWidgetHtml(assetsDir, definition.componentName),
+    html: readWidgetHtml(assetsDir, definition.ui),
   };
 }
 

@@ -4,23 +4,15 @@ import fg from "fast-glob";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import pkg from "./package.json" with { type: "json" };
 import tailwindcss from "@tailwindcss/vite";
 
-const entries = fg.sync("ui/**/index.{tsx,jsx}");
+const entries = fg.sync("ui/**/index.{tsx,jsx}").sort();
 const outDir = "assets";
 
 const PER_ENTRY_CSS_GLOB = "**/*.{css,pcss,scss,sass}";
 const PER_ENTRY_CSS_IGNORE = "**/*.module.*".split(",").map((s) => s.trim());
 const GLOBAL_CSS_LIST = [path.resolve("ui/index.css")];
 
-const targets: string[] = [
-  "pizzaz",
-  "pizzaz-carousel",
-  "pizzaz-list",
-  "pizzaz-albums",
-  "pizzaz-shop",
-];
 const builtNames: string[] = [];
 
 function wrapEntryPlugin(
@@ -44,11 +36,6 @@ function wrapEntryPlugin(
 
       return `
     ${cssImports}
-    export * from ${JSON.stringify(entryFile)};
-
-    import * as __entry from ${JSON.stringify(entryFile)};
-    export default (__entry.default ?? __entry.App);
-
     import ${JSON.stringify(entryFile)};
   `;
     },
@@ -59,9 +46,6 @@ fs.rmSync(outDir, { recursive: true, force: true });
 
 for (const file of entries) {
   const name = path.basename(path.dirname(file));
-  if (targets.length && !targets.includes(name)) {
-    continue;
-  }
 
   const entryAbs = path.resolve(file);
   const entryDir = path.dirname(entryAbs);
@@ -135,17 +119,24 @@ for (const file of entries) {
   console.log(`Built ${name}`);
 }
 
-const outputs = fs
-  .readdirSync("assets")
-  .filter((f) => f.endsWith(".js") || f.endsWith(".css"))
-  .map((f) => path.join("assets", f))
+const outputs = builtNames
+  .flatMap((name) => [
+    path.join(outDir, `${name}.js`),
+    path.join(outDir, `${name}.css`),
+  ])
   .filter((p) => fs.existsSync(p));
 
-const h = crypto
-  .createHash("sha256")
-  .update(pkg.version, "utf8")
-  .digest("hex")
-  .slice(0, 4);
+if (outputs.length === 0) {
+  throw new Error(`No widget JS/CSS outputs found in ${outDir}`);
+}
+
+const hashBuilder = crypto.createHash("sha256");
+for (const out of [...outputs].sort()) {
+  hashBuilder.update(path.basename(out), "utf8");
+  hashBuilder.update(fs.readFileSync(out));
+}
+
+const h = hashBuilder.digest("hex").slice(0, 8);
 
 console.group("Hashing outputs");
 for (const out of outputs) {
@@ -161,7 +152,7 @@ console.groupEnd();
 
 console.log("new hash: ", h);
 
-const defaultBaseUrl = "http://localhost:4444";
+const defaultBaseUrl = "http://localhost:8000/assets";
 const baseUrlCandidate = process.env.BASE_URL?.trim() ?? "";
 const baseUrlRaw = baseUrlCandidate.length > 0 ? baseUrlCandidate : defaultBaseUrl;
 const normalizedBaseUrl = baseUrlRaw.replace(/\/+$/, "") || defaultBaseUrl;

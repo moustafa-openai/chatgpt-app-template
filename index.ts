@@ -6,8 +6,7 @@ import { startSseServer } from "./utils/start-sse-server";
 import { createWidgetCatalog } from "./utils/widget-catalog";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rootDir = path.resolve(__dirname, "..");
-const assetsDir = path.resolve(rootDir, "assets");
+const assetsDir = path.resolve(__dirname, "assets");
 
 const widgetCatalog = createWidgetCatalog(toolDefinitions, assetsDir);
 
@@ -25,4 +24,6 @@ startSseServer({
   createMcpServer: createServerInstance,
   port,
   serverLabel: "Pizzaz MCP server",
+  staticAssetsDir: assetsDir,
+  staticAssetsPath: "/assets",
 });

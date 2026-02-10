@@ -4,6 +4,8 @@ import {
   type Server as HttpServer,
   type ServerResponse,
 } from "node:http";
+import fs from "node:fs";
+import path from "node:path";
 import { URL } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
@@ -14,6 +16,8 @@ type StartSseServerOptions = {
   serverLabel?: string;
   ssePath?: string;
   postPath?: string;
+  staticAssetsDir?: string;
+  staticAssetsPath?: string;
 };
 
 type SessionRecord = {
@@ -24,6 +28,107 @@ type SessionRecord = {
 function setCorsHeaders(res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "content-type");
+}
+
+function getMimeType(filePath: string): string {
+  const ext = path.extname(filePath).toLowerCase();
+  switch (ext) {
+    case ".html":
+      return "text/html; charset=utf-8";
+    case ".js":
+      return "application/javascript; charset=utf-8";
+    case ".css":
+      return "text/css; charset=utf-8";
+    case ".json":
+      return "application/json; charset=utf-8";
+    case ".map":
+      return "application/json; charset=utf-8";
+    case ".svg":
+      return "image/svg+xml";
+    case ".png":
+      return "image/png";
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg";
+    case ".webp":
+      return "image/webp";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+function isInsideDir(candidate: string, parentDir: string): boolean {
+  const relative = path.relative(parentDir, candidate);
+  return relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative);
+}
+
+async function serveStaticAsset(
+  req: IncomingMessage,
+  res: ServerResponse,
+  url: URL,
+  assetsDir: string,
+  assetsPath: string,
+) {
+  if (req.method !== "GET") {
+    return false;
+  }
+
+  if (
+    url.pathname !== assetsPath &&
+    !url.pathname.startsWith(`${assetsPath}/`)
+  ) {
+    return false;
+  }
+
+  let decodedPath = "";
+  try {
+    decodedPath = decodeURIComponent(url.pathname.slice(assetsPath.length));
+  } catch {
+    res.writeHead(400).end("Invalid path encoding");
+    return true;
+  }
+  const relativePath = decodedPath.replace(/^\/+/, "");
+
+  if (!relativePath) {
+    res.writeHead(404).end("Not Found");
+    return true;
+  }
+
+  const rootDir = path.resolve(assetsDir);
+  const candidatePath = path.resolve(rootDir, relativePath);
+
+  if (!isInsideDir(candidatePath, rootDir)) {
+    res.writeHead(400).end("Invalid path");
+    return true;
+  }
+
+  try {
+    const stats = await fs.promises.stat(candidatePath);
+    if (!stats.isFile()) {
+      res.writeHead(404).end("Not Found");
+      return true;
+    }
+  } catch {
+    res.writeHead(404).end("Not Found");
+    return true;
+  }
+
+  setCorsHeaders(res);
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Content-Type", getMimeType(candidatePath));
+
+  const stream = fs.createReadStream(candidatePath);
+  stream.on("error", (error) => {
+    console.error("Failed to stream static asset", error);
+    if (!res.headersSent) {
+      res.writeHead(500).end("Failed to read asset");
+    } else {
+      res.end();
+    }
+  });
+  stream.pipe(res);
+
+  return true;
 }
 
 function getRequestUrl(req: IncomingMessage): URL | null {
@@ -101,6 +206,7 @@ async function handleMessagePost(
 export function startSseServer(options: StartSseServerOptions): HttpServer {
   const ssePath = options.ssePath ?? "/mcp";
   const postPath = options.postPath ?? "/mcp/messages";
+  const staticAssetsPath = options.staticAssetsPath ?? "/assets";
   const sessions = new Map<string, SessionRecord>();
 
   const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
@@ -139,6 +245,19 @@ export function startSseServer(options: StartSseServerOptions): HttpServer {
       return;
     }
 
+    if (options.staticAssetsDir) {
+      const served = await serveStaticAsset(
+        req,
+        res,
+        url,
+        options.staticAssetsDir,
+        staticAssetsPath,
+      );
+      if (served) {
+        return;
+      }
+    }
+
     res.writeHead(404).end("Not Found");
   });
 
@@ -154,6 +273,11 @@ export function startSseServer(options: StartSseServerOptions): HttpServer {
     console.log(
       `  Message post endpoint: POST http://localhost:${options.port}${postPath}?sessionId=...`,
     );
+    if (options.staticAssetsDir) {
+      console.log(
+        `  Widget assets: GET http://localhost:${options.port}${staticAssetsPath}/...`,
+      );
+    }
   });
 
   return httpServer;

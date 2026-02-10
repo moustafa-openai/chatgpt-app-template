@@ -2,121 +2,118 @@
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-This repository is a focused Apps SDK + MCP example centered on the Pizzaz widgets.  
-It includes:
+Focused Apps SDK + MCP example centered on Pizzaz widgets.
 
-- UI widget source code.
-- a Node MCP server (`server`) that exposes the widgets as tools.
-- build scripts that generate standalone assets in `assets/`.
+## Project layout
 
-## What’s in this repo
-
-- `ui/` - Widget source code (React + Apps SDK UI components).
-- `assets/` - Built widget HTML/JS/CSS output.
-- `server/` - Node MCP server (SSE transport).
-- `build-all.mts` - Multi-entry build script for widget assets.
-- `vite.config.mts` - Local UI development server config.
-
-## Included widget examples
-
-- `pizzaz` (map + sidebar + inspector)
-- `pizzaz-carousel`
-- `pizzaz-list`
-- `pizzaz-albums`
-- `pizzaz-shop`
+- `index.ts` - MCP server entrypoint (SSE + tool wiring)
+- `tools/` - MCP tool definitions (one file per tool)
+- `utils/` - generic MCP server plumbing/helpers
+- `ui/` - React widget source code
+- `assets/` - built widget HTML/JS/CSS output
+- `build-all.mts` - widget production build script
+- `vite.config.mts` - local widget dev server config
 
 ## Prerequisites
 
 - Node.js 18+
-- pnpm (recommended)
+- pnpm
 
-## Install dependencies
-
-Install root dependencies:
+## Install
 
 ```bash
 pnpm install
 ```
 
-Install server dependencies:
+Optional local config:
 
 ```bash
-cd server
-pnpm install
-cd ..
+cp .env.example .env
 ```
 
-## Build and serve widget assets
+- `MCP_PORT` controls MCP server port (default `8000`)
+- `LT_SUBDOMAIN` sets reusable localtunnel subdomain
 
-Build:
+## Smooth local dev
 
-```bash
-pnpm run build
-```
-
-Serve static assets (for local development and MCP testing):
-
-```bash
-pnpm run serve
-```
-
-Assets are served at `http://localhost:4444`.
-
-To iterate on UI without a full build, run:
+Run everything with one command:
 
 ```bash
 pnpm run dev
 ```
 
-## Run the MCP server
+This does:
 
-Start the Pizzaz Node server:
+- initial asset build
+- UI rebuild watch on `ui/**`
+- MCP server watch/restart on backend changes
+- serves widget assets from MCP server at `/assets/*`
 
-```bash
-cd server
-pnpm start
-```
-
-By default, it runs on port `8000` and exposes:
-
-- `GET /mcp` (SSE stream)
-- `POST /mcp/messages?sessionId=...` (message endpoint)
-
-## MCP + Apps SDK flow (quick recap)
-
-1. The server lists tools.
-2. The model calls a tool with arguments.
-3. The tool returns `content` + `structuredContent` + metadata including `_meta.openai/outputTemplate`.
-4. ChatGPT renders the matching widget UI.
-
-## Test in ChatGPT (local)
-
-Enable [developer mode](https://platform.openai.com/docs/guides/developer-mode), then add your MCP connector in ChatGPT settings.
-
-If you need a public URL for local testing, tunnel your local server:
+With tunnel:
 
 ```bash
-ngrok http 8000
+pnpm run dev:all:tunnel
 ```
 
-Then add:
+With ngrok instead:
+
+```bash
+pnpm run dev:all:ngrok
+```
+
+## Common commands
+
+Build widget assets:
+
+```bash
+pnpm run build
+```
+
+Run MCP server:
+
+```bash
+pnpm run mcp:start
+```
+
+Run MCP server in watch mode:
+
+```bash
+pnpm run mcp:dev
+```
+
+Run Vite UI dev server only:
+
+```bash
+pnpm run dev:vite
+```
+
+Optional separate static asset serving (not needed for normal MCP dev):
+
+```bash
+BASE_URL=http://localhost:4444 pnpm run build
+pnpm run serve
+```
+
+## MCP endpoints
+
+Default (`MCP_PORT=8000`):
+
+- `GET /mcp`
+- `POST /mcp/messages?sessionId=...`
+- `GET /assets/*`
+
+## ChatGPT connector (local)
+
+If using a tunnel, add this MCP URL in ChatGPT developer mode:
 
 ```text
-https://<your-ngrok-domain>/mcp
+https://<your-tunnel-domain>/mcp
 ```
 
-## Deploy notes
+## Deploy note
 
-If you host assets outside localhost, set `BASE_URL` during build so generated widget HTML points to your hosted asset origin:
+If assets are hosted elsewhere, override `BASE_URL` when building:
 
 ```bash
 BASE_URL=https://your-server.com pnpm run build
 ```
-
-## Contributing
-
-PRs and issues are welcome.
-
-## License
-
-MIT. See [LICENSE](./LICENSE).
