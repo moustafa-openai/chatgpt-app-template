@@ -1,7 +1,5 @@
 # Apps SDK Pizzaz Examples
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
 Focused Apps SDK + MCP example centered on Pizzaz widgets.
 
 ## Project layout
@@ -32,7 +30,6 @@ cp .env.example .env
 ```
 
 - `MCP_PORT` controls MCP server port (default `8000`)
-- `LT_SUBDOMAIN` sets reusable localtunnel subdomain
 
 ## Smooth local dev
 
@@ -48,17 +45,15 @@ This does:
 - UI rebuild watch on `ui/**`
 - MCP server watch/restart on backend changes
 - serves widget assets from MCP server at `/assets/*`
+- serves latest widget template HTML from disk on each resource read, so UI-only
+  changes are reflected without restarting MCP
 
-With tunnel:
-
-```bash
-pnpm run dev:all:tunnel
-```
-
-With ngrok instead:
+To expose MCP publicly, run ngrok separately:
 
 ```bash
-pnpm run dev:all:ngrok
+pnpm run dev
+# in another terminal:
+ngrok http 8000
 ```
 
 ## Common commands
@@ -104,7 +99,19 @@ Default (`MCP_PORT=8000`):
 
 ## ChatGPT connector (local)
 
-If using a tunnel, add this MCP URL in ChatGPT developer mode:
+Run the MCP app locally:
+
+```bash
+pnpm run dev
+```
+
+In a separate terminal, expose it with ngrok:
+
+```bash
+ngrok http 8000
+```
+
+Then add this MCP URL in ChatGPT developer mode:
 
 ```text
 https://<your-tunnel-domain>/mcp

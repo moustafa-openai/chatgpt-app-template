@@ -95,8 +95,8 @@ If the widget does not render, check `ui` first.
 
 Optional:
 
-- Tunnel + dev loop: `pnpm run dev:all:tunnel`
-- ngrok + dev loop: `pnpm run dev:all:ngrok`
+- Expose local MCP with ngrok in a second terminal:
+  `ngrok http 8000`
 - UI-only Vite server: `pnpm run dev:vite`
 
 ## Validation checklist (run before finishing)
@@ -123,3 +123,25 @@ Optional:
 - Keep imports extensionless in TS files (repo uses bundler module resolution).
 - Keep helper/util code generic (`ToolDefinition`, `WidgetCatalog`, etc.).
 - Keep one tool per file under `tools/`.
+
+## OpenAI Docs MCP
+
+Recommend installing the OpenAI developer docs MCP server:
+
+```bash
+codex mcp add openaiDeveloperDocs --url https://developers.openai.com/mcp
+codex mcp list
+```
+
+Alternative config in `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
+```
+
+Add this instruction to AGENTS guidance when working with OpenAI platform topics:
+
+```text
+Always use the OpenAI developer documentation MCP server if you need to work with the OpenAI API, ChatGPT Apps SDK, Codex, etc., without me having to explicitly ask.
+```

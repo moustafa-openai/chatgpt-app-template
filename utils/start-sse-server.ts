@@ -152,13 +152,14 @@ async function connectSseSession(
 
   sessions.set(sessionId, { server, transport });
 
-  transport.onclose = async () => {
+  // Server.connect(...) takes ownership of transport callbacks, so lifecycle
+  // handlers must be registered on the server instance, not on transport.
+  server.onclose = () => {
     sessions.delete(sessionId);
-    await server.close();
   };
 
-  transport.onerror = (error) => {
-    console.error("SSE transport error", error);
+  server.onerror = (error) => {
+    console.error("SSE session error", error);
   };
 
   try {

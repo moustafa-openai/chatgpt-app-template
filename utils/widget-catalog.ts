@@ -11,10 +11,10 @@ import type { ToolDefinition } from "./define-tool";
 type Widget = {
   toolName: string;
   title: string;
+  uiName: string;
   templateUri: string;
   invoking: string;
   invoked: string;
-  html: string;
 };
 
 type DescriptorMeta = {
@@ -98,13 +98,16 @@ function invocationMeta(widget: Widget): InvocationMeta {
 }
 
 function createWidget(definition: ToolDefinition, assetsDir: string): Widget {
+  // Fail fast if assets are missing at startup.
+  readWidgetHtml(assetsDir, definition.ui);
+
   return {
     toolName: definition.name,
     title: definition.title,
+    uiName: definition.ui,
     templateUri: `ui://widget/${definition.ui}.html`,
     invoking: definition.invoking,
     invoked: definition.invoked,
-    html: readWidgetHtml(assetsDir, definition.ui),
   };
 }
 
@@ -174,7 +177,9 @@ export function createWidgetCatalog(
       return {
         uri: widget.templateUri,
         mimeType: "text/html+skybridge",
-        text: widget.html,
+        // Read latest asset HTML on each request so UI rebuilds are reflected
+        // without requiring an MCP server restart.
+        text: readWidgetHtml(assetsDir, widget.uiName),
         _meta: descriptorMeta(widget),
       };
     },
