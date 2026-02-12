@@ -51,14 +51,41 @@ export type WeddingDashboardData = {
   latestInvitation: InvitationDraft | null;
 };
 
+const INITIAL_PENDING_TASKS: Task[] = [
+  {
+    id: "task_1",
+    title: "create guestlist",
+    due_date: "",
+    status: "Pending",
+  },
+  {
+    id: "task_2",
+    title: "find venue",
+    due_date: "",
+    status: "Pending",
+  },
+  {
+    id: "task_3",
+    title: "create schedule",
+    due_date: "",
+    status: "Pending",
+  },
+  {
+    id: "task_4",
+    title: "make invitations",
+    due_date: "",
+    status: "Pending",
+  },
+];
+
 const state: WeddingState = {
   eventDetails: null,
   guests: [],
-  tasks: [],
+  tasks: INITIAL_PENDING_TASKS.map((task) => ({ ...task })),
   schedule: [],
   latestInvitation: null,
   nextGuestId: 1,
-  nextTaskId: 1,
+  nextTaskId: INITIAL_PENDING_TASKS.length + 1,
   nextScheduleId: 1,
 };
 
