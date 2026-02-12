@@ -87,10 +87,17 @@ function App() {
 
   return (
     <div className="wedding-dashboard">
+      <div className="rose-garland rose-garland-top" aria-hidden="true">
+        <span className="rose bloom-lg" />
+        <span className="rose bloom-sm" />
+        <span className="rose bloom-md" />
+      </div>
+
       <header className="wedding-header">
         <div>
           <p className="eyebrow">Wedding Planner MVP</p>
           <h1>Planning dashboard</h1>
+          <p className="subtitle">A romantic overview for your special day</p>
         </div>
         <div className="active-view">Active view: {activeView}</div>
       </header>
@@ -172,6 +179,12 @@ function App() {
           <p className="muted">No invitation text generated yet.</p>
         )}
       </section>
+
+      <div className="rose-garland rose-garland-bottom" aria-hidden="true">
+        <span className="rose bloom-md" />
+        <span className="rose bloom-sm" />
+        <span className="rose bloom-lg" />
+      </div>
     </div>
   );
 }

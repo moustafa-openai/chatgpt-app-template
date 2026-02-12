@@ -1,13 +1,77 @@
 .wedding-dashboard {
-  font-family: "Palatino Linotype", "Book Antiqua", "Times New Roman", serif;
-  color: #222;
+  --rose-100: #fdeff4;
+  --rose-200: #f6d7e1;
+  --rose-300: #ebb7c9;
+  --rose-500: #bd5c7c;
+  --leaf-500: #55785f;
+  --ink: #352933;
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  color: var(--ink);
   background:
-    radial-gradient(circle at top right, #f9e8d8 0%, #f5f0ea 45%, #eef2f4 100%);
-  border: 1px solid #d9cec4;
-  border-radius: 20px;
-  padding: 18px;
+    radial-gradient(circle at 12% 0%, #fff6f8 0%, #fff2f6 35%, transparent 70%),
+    radial-gradient(circle at 85% 100%, #ffe8ef 0%, transparent 55%),
+    linear-gradient(165deg, #fff9fb 0%, #fdf4f7 45%, #f8edf2 100%);
+  border: 1px solid #e9ced8;
+  border-radius: 24px;
+  padding: 20px;
   display: grid;
   gap: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 14px 32px #a15a7330;
+}
+
+.rose-garland {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 0;
+}
+
+.rose-garland-top {
+  justify-content: flex-start;
+}
+
+.rose-garland-bottom {
+  justify-content: flex-end;
+}
+
+.rose {
+  display: inline-block;
+  border-radius: 999px;
+  position: relative;
+  background:
+    radial-gradient(circle at 30% 30%, #ffe6ee 0 35%, #f4adc4 36% 68%, #ca6e8c 69%);
+  box-shadow:
+    inset 0 -2px 5px #7d29481a,
+    0 3px 10px #7d29482e;
+}
+
+.rose::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  bottom: -3px;
+  width: 12px;
+  height: 8px;
+  background: linear-gradient(145deg, #7ca086 0%, var(--leaf-500) 80%);
+  border-radius: 0 100% 0 100%;
+  transform: rotate(-20deg);
+}
+
+.bloom-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.bloom-md {
+  width: 22px;
+  height: 22px;
+}
+
+.bloom-lg {
+  width: 30px;
+  height: 30px;
 }
 
 .wedding-header {
@@ -15,45 +79,60 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 10px;
+  z-index: 1;
 }
 
 .wedding-header h1 {
   margin: 0;
-  font-size: 1.35rem;
-  letter-spacing: 0.3px;
+  font-size: 1.65rem;
+  letter-spacing: 0.4px;
+  color: #6a2940;
 }
 
 .eyebrow {
-  margin: 0 0 4px;
-  font-size: 0.72rem;
+  margin: 0;
+  font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #7a6252;
+  color: #9a6276;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 0.95rem;
+  color: #7b5566;
+  font-style: italic;
 }
 
 .active-view {
-  font-size: 0.78rem;
-  padding: 4px 8px;
+  font-size: 0.76rem;
+  padding: 6px 10px;
   border-radius: 999px;
-  background: #ffffffcc;
-  border: 1px solid #d2c3b7;
+  background: linear-gradient(180deg, #fffdfd, #ffeef4);
+  border: 1px solid #efccda;
+  color: #6e3d4f;
 }
 
 .card {
-  background: #ffffffdc;
-  border: 1px solid #d7cabc;
-  border-radius: 14px;
-  padding: 10px 12px;
+  background: #ffffffde;
+  border: 1px solid #ebd2dc;
+  border-radius: 16px;
+  padding: 11px 13px;
+  z-index: 1;
+  box-shadow: 0 2px 12px #ad6f8521;
 }
 
 .card.is-active {
-  border-color: #b88662;
-  box-shadow: 0 0 0 1px #b88662;
+  border-color: var(--rose-500);
+  box-shadow:
+    0 0 0 1px var(--rose-500),
+    0 8px 18px #a24f6a33;
 }
 
 .card h2 {
   margin: 0 0 8px;
   font-size: 1rem;
+  color: #7f3552;
 }
 
 .card ul {
@@ -67,7 +146,7 @@
 .card li {
   display: grid;
   gap: 6px;
-  border-top: 1px solid #eadfd5;
+  border-top: 1px solid #f3dce5;
   padding-top: 6px;
   font-size: 0.92rem;
 }
@@ -79,7 +158,7 @@
 
 .muted {
   margin: 0;
-  color: #6f6f6f;
+  color: #896f7a;
   font-size: 0.9rem;
 }
 
@@ -87,7 +166,7 @@
   margin: 0 0 4px;
   font-size: 0.84rem;
   text-transform: capitalize;
-  color: #6f4f3a;
+  color: #805062;
 }
 
 .invitation p {
@@ -98,6 +177,7 @@
 @media (min-width: 720px) {
   .wedding-dashboard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 24px;
   }
 
   .wedding-header {
