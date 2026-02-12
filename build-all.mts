@@ -152,24 +152,29 @@ console.groupEnd();
 
 console.log("new hash: ", h);
 
-const defaultBaseUrl = "http://localhost:8000/assets";
-const baseUrlCandidate = process.env.BASE_URL?.trim() ?? "";
-const baseUrlRaw = baseUrlCandidate.length > 0 ? baseUrlCandidate : defaultBaseUrl;
-const normalizedBaseUrl = baseUrlRaw.replace(/\/+$/, "") || defaultBaseUrl;
-console.log(`Using BASE_URL ${normalizedBaseUrl} for generated HTML`);
+// Some hosts (including ChatGPT) may block loading external JS/CSS from tool
+// widgets. To make widgets resilient, we inline the built JS and CSS directly
+// into the generated HTML.
+console.log("Inlining JS/CSS into generated widget HTML");
 
 for (const name of builtNames) {
   const dir = outDir;
   const hashedHtmlPath = path.join(dir, `${name}-${h}.html`);
   const liveHtmlPath = path.join(dir, `${name}.html`);
+
+  const jsPath = path.join(dir, `${name}-${h}.js`);
+  const cssPath = path.join(dir, `${name}-${h}.css`);
+  const js = fs.readFileSync(jsPath, "utf8");
+  const css = fs.readFileSync(cssPath, "utf8");
+
   const html = `<!doctype html>
 <html>
 <head>
-  <script type="module" src="${normalizedBaseUrl}/${name}-${h}.js"></script>
-  <link rel="stylesheet" href="${normalizedBaseUrl}/${name}-${h}.css">
+  <style>${css}</style>
 </head>
 <body>
   <div id="${name}-root"></div>
+  <script type="module">${js}</script>
 </body>
 </html>
 `;
